@@ -6,14 +6,24 @@ import (
 )
 
 //RouteNode store the route data and be a tree node
+//一个前缀节点上可能包括多个需要匹配的路由
 type RouteNode struct {
 	childNodes map[rune]*RouteNode
 	Char       rune
 	Exist      bool
-	regxp      []string
-	handlers   []http.HandlerFunc
+	Routes     []Route
 }
 
+//每个路由应当只绑定一个方法,但是可以绑定多个中间件
+type Route struct {
+	reg         string
+	handler     http.HandlerFunc
+	middlewares []Adapter
+}
+
+type Adapter func(http.Handler) http.Handler
+
+// CreateRouteNode init a route node
 func CreateRouteNode() *RouteNode {
 	node := new(RouteNode)
 	node.childNodes = make(map[rune]*RouteNode)
@@ -22,28 +32,33 @@ func CreateRouteNode() *RouteNode {
 
 func getPrefixReg(url string) (string, string) {
 	url = strings.Replace(url, " ", "", -1)
-	urlbyte := []byte(url)
 	lastStop := 0
-	for i, c := range urlbyte {
+	for i, c := range url {
 		if c == '/' {
 			lastStop = i
 		}
-		if c == '<' {
+		if c == '<' || c == '>' {
 			break
 		}
 	}
-	return string(urlbyte[0:lastStop]), string(urlbyte[lastStop:])
+	return url[0:lastStop], url[lastStop:]
 
 }
 
 // Insert insert a url with handle
-func (root *RouteNode) Insert(s string) {
+// Insert 应当接收一个url字串和一个绑定方法, 一些中间件的操作
+func (root *RouteNode) Insert(s string, handler http.HandlerFunc, adapters ...Adapter) {
 	node := root
-	for _, r := range s {
+	prefix, reg := getPrefixReg(s)
+	for _, r := range prefix {
 		if node.childNodes[r] == nil {
 			node.childNodes[r] = CreateRouteNode()
 		}
 		node = node.childNodes[r]
 	}
+	route := Route{reg, handler, adapters}
 	node.Exist = true
+	node.Routes = append(node.Routes, route)
 }
+
+// Search 函数接收一个给定字符串, 返回一个Route
