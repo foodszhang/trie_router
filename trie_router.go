@@ -2,7 +2,6 @@ package trieRouter
 
 import (
 	"net/http"
-	"strings"
 )
 
 //RouteNode store the route data and be a tree node
@@ -28,21 +27,6 @@ func CreateRouteNode() *RouteNode {
 	node := new(RouteNode)
 	node.childNodes = make(map[rune]*RouteNode)
 	return node
-}
-
-func getPrefixReg(url string) (string, string) {
-	url = strings.Replace(url, " ", "", -1)
-	lastStop := 0
-	for i, c := range url {
-		if c == '/' {
-			lastStop = i
-		}
-		if c == '<' || c == '>' {
-			break
-		}
-	}
-	return url[0:lastStop], url[lastStop:]
-
 }
 
 // Insert insert a url with handle
