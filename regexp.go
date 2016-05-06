@@ -6,13 +6,14 @@ import (
 
 type Param struct {
 	name  string
+	type_ string
 	reg   *regexp.Regexp
 	value string
 }
 
 var rReg *regexp.Regexp = regexp.MustCompile(`<.*$`)
 var pReg *regexp.Regexp = regexp.MustCompile(`<([^<>:]*):([^<>:]*)>`)
-var typeReg map[string]*regexp.Regexp
+var typeReg map[string]*regexp.Regexp = make(map[string]*regexp.Regexp)
 
 func getPrefixReg(url string) (string, string) {
 	reg := rReg.FindString(url)
@@ -32,7 +33,7 @@ func getRegType(reg string) []Param {
 }
 
 //将reg中的<>替换为相应的正则表达并
-func replaceReg(reg string) string {
+func ReplaceReg(reg string) string {
 	return pReg.ReplaceAllStringFunc(reg, rg)
 
 }
@@ -42,6 +43,26 @@ func rg(reg string) string {
 
 }
 func init() {
-	typeReg["int"] = regexp.MustCompile(`\d+`)
-	typeReg["string"] = regexp.MustCompile(`[^/]+`)
+	typeReg["int"] = regexp.MustCompile(`(\d+)`)
+	typeReg["string"] = regexp.MustCompile(`([^/]+)`)
+}
+func Match(reg, url string) (bool, []Param) {
+	reg = regexp.QuoteMeta(reg)
+	params := getRegType(reg)
+	trueRg := regexp.MustCompile(ReplaceReg(reg))
+	all := trueRg.FindStringSubmatch(url)
+	if all == nil {
+		return false, nil
+	}
+	matched := all[0] == url
+	if !matched {
+		return false, nil
+	}
+	for i, v := range all {
+		if i > 0 {
+			params[i-1].value = v
+		}
+	}
+	return true, params
+
 }
