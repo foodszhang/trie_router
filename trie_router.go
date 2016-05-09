@@ -49,7 +49,7 @@ func setMethods(methods []string) map[string]bool {
 
 // Insert insert a url with handle
 // Insert 应当接收一个url字串和一个绑定方法,还有一个操作数组, 一些中间件的操作
-func (root *RouteNode) Insert(s string, methods []string, handler http.HandlerFunc, adapters ...Adapter) {
+func (root *RouteNode) Insert(s string, methods []string, handler http.HandlerFunc, adapters ...Adapter) error {
 	node := root
 	prefix, reg := getPrefixReg(s)
 	for _, r := range prefix {
@@ -61,6 +61,7 @@ func (root *RouteNode) Insert(s string, methods []string, handler http.HandlerFu
 	route := Route{reg, handler, setMethods(methods), adapters}
 	node.Exist = true
 	node.Routes = append(node.Routes, route)
+	return nil
 }
 func (root *RouteNode) Match(url, method string) (bool, http.Handler, []Param) {
 	node := root
