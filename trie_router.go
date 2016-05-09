@@ -17,6 +17,7 @@ type RouteNode struct {
 type Route struct {
 	Reg         string
 	Handler     http.HandlerFunc
+	Methods     map[string]bool
 	Middlewares []Adapter
 }
 
@@ -38,10 +39,17 @@ func CreateRouteNode() *RouteNode {
 	node.Routes = make([]Route, 0)
 	return node
 }
+func setMethods(methods []string) map[string]bool {
+	m := make(map[string]bool)
+	for _, v := range methods {
+		m[v] = true
+	}
+	return m
+}
 
 // Insert insert a url with handle
-// Insert 应当接收一个url字串和一个绑定方法, 一些中间件的操作
-func (root *RouteNode) Insert(s string, handler http.HandlerFunc, adapters ...Adapter) {
+// Insert 应当接收一个url字串和一个绑定方法,还有一个操作数组, 一些中间件的操作
+func (root *RouteNode) Insert(s string, methods []string, handler http.HandlerFunc, adapters ...Adapter) {
 	node := root
 	prefix, reg := getPrefixReg(s)
 	for _, r := range prefix {
@@ -50,11 +58,11 @@ func (root *RouteNode) Insert(s string, handler http.HandlerFunc, adapters ...Ad
 		}
 		node = node.childNodes[r]
 	}
-	route := Route{reg, handler, adapters}
+	route := Route{reg, handler, setMethods(methods), adapters}
 	node.Exist = true
 	node.Routes = append(node.Routes, route)
 }
-func (root *RouteNode) Match(url string) (bool, http.Handler, []Param) {
+func (root *RouteNode) Match(url, method string) (bool, http.Handler, []Param) {
 	node := root
 	var lastnode *RouteNode = nil
 	len := 0
@@ -69,7 +77,7 @@ func (root *RouteNode) Match(url string) (bool, http.Handler, []Param) {
 	// 完全匹配的情况,这时候搜索route中reg为空的即可
 	if node != nil && node.Exist {
 		for _, v := range node.Routes {
-			if v.Reg == "" {
+			if _, ok := v.Methods[method]; v.Reg == "" && ok {
 				return true, Adapt(v.Handler, v.Middlewares...), nil
 			}
 
@@ -78,6 +86,9 @@ func (root *RouteNode) Match(url string) (bool, http.Handler, []Param) {
 	} else if node == nil && lastnode.Exist {
 		urlRg := url[len+1:]
 		for _, v := range lastnode.Routes {
+			if _, ok := v.Methods[method]; !ok {
+				continue
+			}
 			matched, params := Match(v.Reg, urlRg)
 			if matched {
 				return true, Adapt(v.Handler, v.Middlewares...), params
