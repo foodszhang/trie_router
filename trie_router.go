@@ -1,4 +1,4 @@
-package trieRouter
+package TrieRouter
 
 import (
 	"net/http"

@@ -1,4 +1,4 @@
-package trieRouter
+package TrieRouter
 
 // Node struct define the tree
 type Node struct {
