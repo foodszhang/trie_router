@@ -5,10 +5,10 @@ import (
 )
 
 type Param struct {
-	name  string
+	Name  string
 	type_ string
 	reg   *regexp.Regexp
-	value string
+	Value string
 }
 
 var rReg *regexp.Regexp = regexp.MustCompile(`<.*$`)
@@ -26,7 +26,7 @@ func getRegType(reg string) []Param {
 	all := pReg.FindAllStringSubmatch(reg, -1)
 	params := make([]Param, len(all))
 	for i := range all {
-		params[i].name = all[i][1]
+		params[i].Name = all[i][1]
 		params[i].reg = typeReg[all[i][1]]
 	}
 	return params
@@ -60,7 +60,7 @@ func Match(reg, url string) (bool, []Param) {
 	}
 	for i, v := range all {
 		if i > 0 {
-			params[i-1].value = v
+			params[i-1].Value = v
 		}
 	}
 	return true, params
