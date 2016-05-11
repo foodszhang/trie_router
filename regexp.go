@@ -26,7 +26,8 @@ func getRegType(reg string) []Param {
 	all := pReg.FindAllStringSubmatch(reg, -1)
 	params := make([]Param, len(all))
 	for i := range all {
-		params[i].Name = all[i][1]
+		params[i].type_ = all[i][1]
+		params[i].Name = all[i][2]
 		params[i].reg = typeReg[all[i][1]]
 	}
 	return params
