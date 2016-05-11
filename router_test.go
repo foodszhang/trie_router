@@ -1,4 +1,4 @@
-package TrieRouter
+package router
 
 import (
 	"fmt"
