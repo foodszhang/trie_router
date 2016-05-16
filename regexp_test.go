@@ -20,7 +20,7 @@ func TestRegexp(t *testing.T) {
 	matched, params := Match("/user/caca<int:id>/tutu<string:action>asd$", "/user/caca123/tutudeleteasd$")
 	if matched {
 		for _, v := range params {
-			t.Log(v.name, v.value)
+			t.Log(v.Name, v.Value)
 		}
 	}
 

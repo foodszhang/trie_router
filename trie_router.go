@@ -16,7 +16,7 @@ type RouteNode struct {
 //每个路由应当只绑定一个方法,但是可以绑定多个中间件
 type Route struct {
 	Reg         string
-	Handler     http.HandlerFunc
+	Handler     http.Handler
 	Methods     map[string]bool
 	Middlewares []Adapter
 }
@@ -49,7 +49,7 @@ func setMethods(methods []string) map[string]bool {
 
 // Insert insert a url with handle
 // Insert 应当接收一个url字串和一个绑定方法,还有一个操作数组, 一些中间件的操作
-func (root *RouteNode) Insert(s string, methods []string, handler http.HandlerFunc, adapters ...Adapter) error {
+func (root *RouteNode) Insert(s string, methods []string, handler http.Handler, adapters ...Adapter) error {
 	node := root
 	prefix, reg := getPrefixReg(s)
 	for _, r := range prefix {

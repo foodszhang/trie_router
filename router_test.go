@@ -18,14 +18,14 @@ func TestRouter(t *testing.T) {
 	matched, _, params := root.Match("/user/caca123/tutudeleteasd$", "GET")
 	if matched {
 		for _, v := range params {
-			t.Log(v.name, v.value)
+			t.Log(v.Name, v.Value)
 		}
 		t.Error("must be not matched")
 	}
 	matched, _, params = root.Match("/user/caca123/tutudeleteasd$", "POST")
 	if matched {
 		for _, v := range params {
-			t.Log(v.name, v.value)
+			t.Log(v.Name, v.Value)
 		}
 	} else {
 		t.Error("must be matched")
